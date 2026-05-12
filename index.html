@@ -1,295 +1,730 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
 <meta charset="UTF-8">
-<title>Clean Headers</title>
+<title>CMH-9 — Email Header Cleaner</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;600;700;800&display=swap" rel="stylesheet">
 
 <style>
-body {
-    margin: 0;
-    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-    background: radial-gradient(circle at top, #050b1a 0%, #020617 60%);
-    color: #e5e7eb;
-}
+  :root[data-theme="dark"] {
+    --bg:          #07090f;
+    --bg2:         #0c1120;
+    --bg3:         #111827;
+    --border:      #1e2d44;
+    --border2:     #263348;
+    --text:        #e2e8f0;
+    --text2:       #8899b4;
+    --text3:       #4b6080;
+    --accent:      #3b7eff;
+    --accent2:     #1d5bd8;
+    --accent-glow: rgba(59,126,255,.28);
+    --success:     #22d3a0;
+    --tag-bg:      rgba(59,126,255,.1);
+    --shadow:      0 20px 60px rgba(0,0,0,.6);
+    --inset:       inset 0 1px 0 rgba(255,255,255,.04);
+    --mono-bg:     #050810;
+  }
+  :root[data-theme="light"] {
+    --bg:          #f0f4fa;
+    --bg2:         #ffffff;
+    --bg3:         #f8fafc;
+    --border:      #dce4f0;
+    --border2:     #c8d5e8;
+    --text:        #0f1928;
+    --text2:       #4a5e7a;
+    --text3:       #8fa3be;
+    --accent:      #1d5bd8;
+    --accent2:     #1448b0;
+    --accent-glow: rgba(29,91,216,.18);
+    --success:     #0ea87a;
+    --tag-bg:      rgba(29,91,216,.08);
+    --shadow:      0 12px 40px rgba(15,25,40,.1);
+    --inset:       inset 0 1px 0 rgba(255,255,255,.8);
+    --mono-bg:     #f4f7fc;
+  }
 
-.container {
-    max-width: 1400px;
-    margin: auto;
-    padding: 40px 30px 50px;
-}
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-h1 {
-    text-align: center;
-    font-size: 40px;
-    font-weight: 700;
-    margin-bottom: 4px;
-    letter-spacing: .4px;
-}
+  body {
+    font-family: 'Syne', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    transition: background .3s, color .3s;
+  }
 
-.subtitle {
-    text-align: center;
-    color: #94a3b8;
-    margin-bottom: 40px;
-    font-size: 15px;
-}
+  /* ── Animated grid background ── */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--border) 1px, transparent 1px),
+      linear-gradient(90deg, var(--border) 1px, transparent 1px);
+    background-size: 48px 48px;
+    opacity: .35;
+    pointer-events: none;
+    z-index: 0;
+  }
 
-.grid {
+  .wrap {
+    position: relative;
+    z-index: 1;
+    max-width: 1320px;
+    margin: 0 auto;
+    padding: 40px 28px 60px;
+  }
+
+  /* ── Header ── */
+  .header {
     display: flex;
-    gap: 28px;
-    align-items: stretch;
-}
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 36px;
+  }
 
-.grid > .box:first-child {
-    flex: 1.4;
-}
+  .brand {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+  }
 
-.grid > .box:nth-child(2) {
-    flex: 1;
-}
+  .brand-title {
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    color: var(--text);
+  }
 
-.box {
-    background: linear-gradient(180deg, #0b1224, #0a1020);
-    border: 1px solid #1e293b;
-    border-radius: 18px;
-    padding: 18px 18px 20px;
-    box-shadow: inset 0 0 0 1px rgba(255,255,255,0.02),
-                0 10px 30px rgba(0,0,0,.4);
+  .brand-title span {
+    color: var(--accent);
+  }
+
+  .brand-sub {
+    font-size: 13px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text3);
+    letter-spacing: .5px;
+  }
+
+  /* ── Theme toggle ── */
+  .theme-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 50px;
+    border: 1px solid var(--border2);
+    background: var(--bg2);
+    color: var(--text2);
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+    box-shadow: var(--shadow);
+  }
+
+  .theme-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+  .theme-btn svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+  /* ── Status bar ── */
+  .status-bar {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 10px 18px;
+    border-radius: 10px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    margin-bottom: 28px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--text3);
+  }
+
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--text3);
+    transition: background .3s;
+  }
+  .status-dot.ready   { background: var(--success); box-shadow: 0 0 8px var(--success); }
+  .status-dot.working { background: var(--accent);  box-shadow: 0 0 8px var(--accent); animation: pulse 1s infinite; }
+
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+  .status-msg { flex: 1; color: var(--text2); }
+  .stat { color: var(--text2); }
+  .stat strong { color: var(--text); }
+
+  /* ── Main grid ── */
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  /* ── Card / Box ── */
+  .card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    box-shadow: var(--shadow), var(--inset);
     display: flex;
     flex-direction: column;
-}
+    overflow: hidden;
+    transition: background .3s, border-color .3s;
+  }
 
-.box h3 {
-    margin: 0 0 12px;
-    font-size: 16px;
-    font-weight: 600;
-    color: #e5e7eb;
-}
-
-textarea {
-    width: 100%;
-    flex: 1;
-    min-height: 360px;
-    background: #020617;
-    color: #e5e7eb;
-    border: 1px solid #334155;
-    border-radius: 14px;
-    padding: 16px;
-    font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    font-size: 13px;
-    line-height: 1.5;
-    resize: vertical;
-}
-
-textarea:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 1px #3b82f6;
-}
-
-.form-group {
-    margin-bottom: 22px;
-}
-
-label {
-    display: block;
-    font-size: 13px;
-    font-weight: 600;
-    color: #e5e7eb;
-    margin-bottom: 6px;
-}
-
-input[type="text"] {
-    width: 100%;
-    padding: 14px 16px;
-    background: #020617;
-    border: 1px solid #334155;
-    border-radius: 12px;
-    color: #e5e7eb;
-    font-size: 14px;
-}
-
-input[type="text"]:focus {
-    outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 1px #3b82f6;
-}
-
-small {
-    display: block;
-    margin-top: 6px;
-    font-size: 12px;
-    color: #64748b;
-}
-
-.actions {
+  .card-header {
     display: flex;
-    gap: 14px;
-    margin-top: auto;
-    padding-top: 12px;
-}
+    align-items: center;
+    gap: 10px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--border);
+    background: var(--bg3);
+  }
 
-button {
-    flex: 1;
-    padding: 14px 0;
-    font-size: 14px;
-    border-radius: 12px;
-    border: 1px solid rgba(255,255,255,.08);
-    cursor: pointer;
-    background: linear-gradient(180deg, #3b82f6, #2563eb);
-    color: #fff;
-    font-weight: 600;
-    letter-spacing: .2px;
-    box-shadow: 0 4px 14px rgba(59,130,246,.35);
-}
+  .card-icon {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    background: var(--tag-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+  }
 
-button:last-child {
-    background: linear-gradient(180deg, #1e293b, #0f172a);
-    box-shadow: none;
-    color: #cbd5f5;
-}
+  .card-icon svg { width: 15px; height: 15px; }
 
-button:hover {
-    filter: brightness(1.08);
-}
-
-.output {
-    margin-top: 28px;
-}
-
-.footer {
-    text-align: center;
-    color: #64748b;
+  .card-title {
     font-size: 13px;
+    font-weight: 700;
+    color: var(--text);
+    letter-spacing: .3px;
+  }
+
+  .card-badge {
+    margin-left: auto;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text3);
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 2px 10px;
+  }
+
+  .card-body { padding: 18px; flex: 1; display: flex; flex-direction: column; }
+
+  /* ── Textarea ── */
+  textarea {
+    flex: 1;
+    width: 100%;
+    min-height: 380px;
+    background: var(--mono-bg);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.6;
+    resize: vertical;
+    transition: border-color .2s, background .3s;
+  }
+
+  textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
+
+  textarea[readonly] { cursor: default; }
+
+  /* ── Form controls ── */
+  .field { margin-bottom: 18px; }
+
+  .field label {
+    display: block;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--text2);
+    margin-bottom: 7px;
+    letter-spacing: .8px;
+    text-transform: uppercase;
+  }
+
+  .field input[type="text"] {
+    width: 100%;
+    padding: 11px 14px;
+    background: var(--mono-bg);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    transition: border-color .2s, background .3s;
+  }
+
+  .field input[type="text"]:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-glow);
+  }
+
+  .field small {
+    display: block;
+    margin-top: 5px;
+    font-size: 11.5px;
+    color: var(--text3);
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* ── Divider ── */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 6px 0 18px;
+  }
+
+  /* ── Rule list ── */
+  .rules-title {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--text3);
+    margin-bottom: 10px;
+  }
+
+  .rule-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--text2);
+    padding: 4px 0;
+  }
+
+  .rule-item::before {
+    content: '';
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--accent);
+    flex-shrink: 0;
+    opacity: .7;
+  }
+
+  /* ── Buttons ── */
+  .btn-group { display: flex; gap: 10px; margin-top: auto; padding-top: 20px; }
+
+  .btn {
+    flex: 1;
+    padding: 13px 0;
+    font-family: 'Syne', sans-serif;
+    font-size: 13.5px;
+    font-weight: 700;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    cursor: pointer;
+    letter-spacing: .3px;
+    transition: all .15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+  }
+
+  .btn svg { width: 15px; height: 15px; }
+
+  .btn-primary {
+    background: linear-gradient(160deg, var(--accent), var(--accent2));
+    color: #fff;
+    box-shadow: 0 4px 20px var(--accent-glow);
+    border-color: rgba(255,255,255,.1);
+  }
+
+  .btn-primary:hover { filter: brightness(1.1); transform: translateY(-1px); }
+  .btn-primary:active { transform: translateY(0); filter: brightness(1); }
+
+  .btn-secondary {
+    background: var(--bg3);
+    color: var(--text2);
+    border-color: var(--border);
+  }
+
+  .btn-secondary:hover { color: var(--text); border-color: var(--accent); }
+
+  /* ── Output section ── */
+  .output-card { margin-top: 0; }
+  .output-card textarea { min-height: 260px; }
+
+  /* ── Copy toast ── */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--success);
+    color: #fff;
+    padding: 10px 22px;
+    border-radius: 50px;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .3s, transform .3s;
+    z-index: 9999;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center;
     margin-top: 40px;
-}
+    font-size: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--text3);
+  }
 
-@media (max-width: 900px) {
-    .grid {
-        grid-template-columns: 1fr;
-    }
-
-    textarea {
-        min-height: 280px;
-    }
-}
-
+  /* ── Responsive ── */
+  @media (max-width: 860px) {
+    .grid { grid-template-columns: 1fr; }
+    textarea { min-height: 260px; }
+  }
 </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>CMH-9</h1>
-    <div class="subtitle">Clean and modify email headers</div>
+<div class="wrap">
 
-    <div class="grid">
+  <!-- Header -->
+  <div class="header">
+    <div class="brand">
+      <div class="brand-title">CMH<span>-9</span></div>
+      <div class="brand-sub">// email header cleaner</div>
+    </div>
+    <button class="theme-btn" onclick="toggleTheme()" id="theme-btn">
+      <svg id="theme-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M21 12.79A9 9 0 1111.21 3a7 7 0 109.79 9.79z"/>
+      </svg>
+      <span id="theme-label">Light</span>
+    </button>
+  </div>
 
-        <div class="box">
-            <h3>Input Headers</h3>
-            <textarea id="input"></textarea>
+  <!-- Status bar -->
+  <div class="status-bar">
+    <div class="status-dot" id="status-dot"></div>
+    <span class="status-msg" id="status-msg">Paste raw email headers and press Process</span>
+    <span class="stat">Lines: <strong id="stat-in">0</strong></span>
+    <span class="stat">→</span>
+    <span class="stat">Out: <strong id="stat-out">0</strong></span>
+  </div>
+
+  <!-- Grid: input + options -->
+  <div class="grid">
+
+    <!-- Input -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="3"/><path d="M7 8h10M7 12h6M7 16h8"/></svg>
+        </div>
+        <span class="card-title">Raw Email Headers</span>
+        <span class="card-badge" id="badge-in">0 lines</span>
+      </div>
+      <div class="card-body">
+        <textarea id="input" placeholder="Paste full raw email headers here (RFC 822 format)…" oninput="updateStats()"></textarea>
+      </div>
+    </div>
+
+    <!-- Options -->
+    <div class="card">
+      <div class="card-header">
+        <div class="card-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.07 4.93a10 10 0 010 14.14M4.93 4.93a10 10 0 000 14.14"/></svg>
+        </div>
+        <span class="card-title">Processing Options</span>
+      </div>
+      <div class="card-body">
+
+        <div class="field">
+          <label>Domain Replacement</label>
+          <input type="text" id="domain" value="[RDNS]" placeholder="e.g. [RDNS]">
+          <small>Replaces @domain in From: header</small>
         </div>
 
-        <div class="box">
-            <h3>Processing Options</h3>
-
-            <div class="form-group">
-                <label>Domain Replacement:</label>
-                <input type="text" id="domain" value="[RP]" placeholder="Leave empty to remove domain entirely">
-                <small>Leave empty to remove domain entirely</small>
-            </div>
-
-            <div class="form-group">
-                <label>Message-ID Tag:</label>
-                <input type="text" id="eid" value="[EID]">
-            </div>
-
-            <div class="actions">
-                <button onclick="processHeaders()">Process</button>
-                <button onclick="copyResult()">Copy</button>
-            </div>
+        <div class="field">
+          <label>Message-ID Tag</label>
+          <input type="text" id="eid" value="[EID]">
+          <small>Inserted before @ in Message-ID</small>
         </div>
 
+        <hr class="divider">
+
+        <div class="rules-title">Stripped Headers</div>
+        <div class="rule-item">Delivered-To</div>
+        <div class="rule-item">ARC-Seal / ARC-Message-Signature</div>
+        <div class="rule-item">ARC-Authentication-Results</div>
+        <div class="rule-item">DKIM-Signature</div>
+        <div class="rule-item">Return-Path &amp; Sender</div>
+        <div class="rule-item">Authentication-Results</div>
+        <div class="rule-item">Received-SPF / X-Received</div>
+        <div class="rule-item">X-Google-Smtp-Source</div>
+
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="processHeaders()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 3l14 9-14 9V3z"/></svg>
+            Process
+          </button>
+          <button class="btn btn-secondary" onclick="clearAll()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+            Clear
+          </button>
+        </div>
+
+      </div>
     </div>
 
-    <div class="box output">
-        <h3>Processed Headers</h3>
-        <textarea id="output" readonly></textarea>
-    </div>
+  </div><!-- /grid -->
 
-    <div class="footer">
-       karim rachmoun © 2025 — Clean Headers Clone
+  <!-- Output -->
+  <div class="card output-card">
+    <div class="card-header">
+      <div class="card-icon" style="background:rgba(34,211,160,.1);color:var(--success)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <span class="card-title">Cleaned Output</span>
+      <span class="card-badge" id="badge-out">0 lines</span>
+      <button class="btn btn-secondary" style="flex:none;padding:6px 16px;margin-left:12px;font-size:12px;gap:5px;" onclick="copyResult()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="13" height="13"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        Copy
+      </button>
     </div>
+    <div class="card-body">
+      <textarea id="output" readonly placeholder="Processed headers will appear here…"></textarea>
+    </div>
+  </div>
+
+  <div class="footer">karim rachmoun © 2025 — CMH-9 Clean Headers</div>
 </div>
 
+<!-- Toast -->
+<div class="toast" id="toast">✓ Copied to clipboard</div>
+
 <script>
+/* ── Theme ── */
+const root = document.documentElement;
+function toggleTheme() {
+  const dark = root.getAttribute('data-theme') === 'dark';
+  root.setAttribute('data-theme', dark ? 'light' : 'dark');
+  document.getElementById('theme-label').textContent = dark ? 'Dark' : 'Light';
+  const icon = document.getElementById('theme-icon');
+  icon.innerHTML = dark
+    ? '<circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>'
+    : '<path d="M21 12.79A9 9 0 1111.21 3a7 7 0 109.79 9.79z"/>';
+}
+
+/* ── Stats ── */
+function updateStats() {
+  const val = document.getElementById('input').value;
+  const n = val.trim() === '' ? 0 : val.split('\n').length;
+  document.getElementById('stat-in').textContent = n;
+  document.getElementById('badge-in').textContent = n + ' lines';
+}
+
+function setStatus(state, msg) {
+  const dot = document.getElementById('status-dot');
+  dot.className = 'status-dot ' + state;
+  document.getElementById('status-msg').textContent = msg;
+}
+
+/* ── Main processing — mirrors Python clean_email_headers() exactly ── */
 function processHeaders() {
-    const lines = document.getElementById("input").value.split("\n");
-    const domain = document.getElementById("domain").value.trim(); 
-    const eid = document.getElementById("eid").value.trim();
+  const raw = document.getElementById('input').value;
+  if (!raw.trim()) { setStatus('', 'No input detected.'); return; }
 
-    let output = [];
-    let skipBlock = false;
+  setStatus('working', 'Processing headers…');
 
-    for (let line of lines) {
+  const domainVal = document.getElementById('domain').value.trim() || '[RDNS]';
+  const eidVal    = document.getElementById('eid').value.trim()    || '[EID]';
 
-        if (skipBlock) {
-            if (/^\s+/.test(line)) continue;
-            skipBlock = false;
-        }
+  // Headers to remove (mirrors Python list)
+  const REMOVE_HEADERS = [
+    'delivered-to',
+    'arc-seal',
+    'arc-message-signature',
+    'arc-authentication-results',
+    'return-path',
+    'received-spf',
+    'authentication-results',
+    'dkim-signature',
+    'sender',
+    'x-received',
+    'x-google-smtp-source',
+    // extra ones from the original JS that make sense to keep
+    'x-msfbl',
+    'x-google-',
+    'received-dkim',
+    'x-xsspam',
+  ];
 
-        if (/^(Delivered-To:|ARC-|DKIM-Signature:|X-MSFBL:|X-Google-|X-Received:|Authentication-Results:|Received-SPF:|Received-DKIM:|Return-Path:|Sender:|x-xsSpam:)/i.test(line)) {
-            skipBlock = true;
-            continue;
-        }
+  const lines = raw.split('\n');
+  const cleaned = [];
 
-        if (
-            /^\s*(b=|bh=|fh=|h=|d=|s=|t=)/i.test(line) ||
-            /^[A-Za-z0-9+/]{40,}={0,2}$/.test(line)
-        ) continue;
+  let skipSection = false;
+  let currentHeader = null;
+  let ccExists = false;
 
-        if (line.startsWith("To:")) {
-            output.push("To: [*to]");
-            output.push("Cc: [*to]");
-            continue;
-        }
+  // Pre-scan for cc existence (mirrors Python)
+  for (const line of lines) {
+    if (line.toLowerCase().startsWith('cc:')) ccExists = true;
+  }
 
-        if (line.startsWith("From:")) {
-            let newFrom = line.replace(/@[^>\s]+/g, domain ? `@${domain}` : "@[RP]");
-            output.push(newFrom);
-            continue;
-        }
+  for (const line of lines) {
+    const lineStripped = line.trim();
+    const lineLower    = line.toLowerCase();
 
-        if (line.startsWith("Date:")) {
-            output.push("Date: [DATE]");
-            continue;
-        }
+    // Check if this line starts a header to remove
+    let headerFound = false;
+    for (const h of REMOVE_HEADERS) {
+      if (lineLower.startsWith(h + ':') || (h.endsWith('-') && lineLower.startsWith(h))) {
+        skipSection = true;
+        headerFound = true;
+        currentHeader = h;
+        break;
+      }
+    }
 
-        if (line.startsWith("Message-ID:")) {
-            if (eid) {
-                output.push(
-                line.replace(/(<[^@]+)(@[^>]+>)/, `$1${eid}$2`)
+    if (skipSection) {
+      // Python logic: stop skipping when we hit a new non-remove header
+      const isNewHeader = /^[A-Za-z]/.test(line) && line.includes(':') && !line.startsWith(' ') && !line.startsWith('\t');
+      if (isNewHeader && !headerFound) {
+        const isRemoveHeader = REMOVE_HEADERS.some(h =>
+          lineLower.startsWith(h + ':') || (h.endsWith('-') && lineLower.startsWith(h))
         );
-    } else {
-        output.push(line);
+        if (!isRemoveHeader) {
+          skipSection = false;
+          currentHeader = null;
+          // fall through to process this line
+        } else {
+          continue;
+        }
+      } else if (!isNewHeader && lineStripped === '') {
+        skipSection = false;
+        currentHeader = null;
+        continue;
+      } else {
+        continue;
+      }
     }
-    continue;
+
+    if (headerFound) continue;
+
+    // Date
+    if (lineLower.startsWith('date:')) {
+      cleaned.push('Date: [DATE]');
+      continue;
+    }
+
+    // Message-ID
+    if (lineLower.startsWith('message-id:')) {
+      const parts = line.split(':', 2);
+      if (parts.length > 1) {
+        let msgId = parts[1].trim();
+        if (msgId.includes('@')) {
+          msgId = msgId.replace('@', eidVal + '@');
+        }
+        cleaned.push('Message-ID: ' + msgId);
+      } else {
+        cleaned.push(line);
+      }
+      continue;
+    }
+
+    // From — replace @domain with configured replacement
+    if (lineLower.startsWith('from:')) {
+      const parts = line.split(':', 2);
+      if (parts.length > 1) {
+        let fromHeader = parts[1].trim();
+        if (fromHeader.includes('@')) {
+          if (fromHeader.includes('<') && fromHeader.includes('>')) {
+            const start = fromHeader.indexOf('<');
+            const end   = fromHeader.lastIndexOf('>');
+            if (start < end) {
+              const emailPart = fromHeader.slice(start + 1, end);
+              if (emailPart.includes('@')) {
+                const localPart = emailPart.split('@')[0];
+                const newEmail  = localPart + '@' + domainVal;
+                fromHeader = fromHeader.slice(0, start + 1) + newEmail + fromHeader.slice(end);
+              }
+            }
+          } else {
+            const localPart = fromHeader.split('@')[0];
+            fromHeader = localPart + '@' + domainVal;
+          }
+        }
+        cleaned.push('From: ' + fromHeader);
+      } else {
+        cleaned.push(line);
+      }
+      continue;
+    }
+
+    // To — replace with [*to], add Cc if missing
+    if (lineLower.startsWith('to:')) {
+      let started = '', ended = '';
+      if (line.includes('<') && line.includes('>')) { started = '<'; ended = '>'; }
+      cleaned.push('To: ' + started + '[*to]' + ended);
+      if (!ccExists) {
+        cleaned.push('Cc: [*to]');
+        ccExists = true;
+      }
+      continue;
+    }
+
+    // Keep everything else
+    cleaned.push(line);
+  }
+
+  const result = cleaned.join('\n').trim();
+  document.getElementById('output').value = result;
+
+  const outLines = result === '' ? 0 : result.split('\n').length;
+  document.getElementById('stat-out').textContent = outLines;
+  document.getElementById('badge-out').textContent = outLines + ' lines';
+
+  setStatus('ready', `Done — ${outLines} lines output (${lines.length - outLines} stripped)`);
 }
 
-
-        output.push(line);
-    }
-
-    document.getElementById("output").value = output.join("\n").trim();
-}
-
+/* ── Copy ── */
 function copyResult() {
-    const out = document.getElementById("output");
-    out.select();
-    document.execCommand("copy");
-    alert("Copied!");
+  const out = document.getElementById('output');
+  if (!out.value.trim()) return;
+  navigator.clipboard.writeText(out.value).catch(() => {
+    out.select(); document.execCommand('copy');
+  });
+  const t = document.getElementById('toast');
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2000);
 }
+
+/* ── Clear ── */
+function clearAll() {
+  document.getElementById('input').value = '';
+  document.getElementById('output').value = '';
+  updateStats();
+  document.getElementById('stat-out').textContent = '0';
+  document.getElementById('badge-out').textContent = '0 lines';
+  setStatus('', 'Paste raw email headers and press Process');
+}
+
+// Init
+updateStats();
 </script>
-
-
 </body>
 </html>
